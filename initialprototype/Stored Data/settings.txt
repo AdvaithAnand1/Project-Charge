@@ -1,0 +1,16 @@
+debug:
+true
+mode:
+night
+daytime settings (on or off):
+on
+daytime settings (percentage):
+80
+nighttime settings (on or off):
+off
+nighttime settings (percentage):
+50
+nighttime settings (auto or manual):
+manual
+nighttime settings (time):
+09:45
