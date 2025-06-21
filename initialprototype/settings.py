@@ -1,5 +1,5 @@
 #Opens the file in the folder "Stored Data", 'settings.txt', and reads it.
-with open('Stored Data/settings.txt', 'r') as f:
+with open('StoredData/settings.txt', 'r') as f:
 	data = f.readlines()
 #Imports
 import os
