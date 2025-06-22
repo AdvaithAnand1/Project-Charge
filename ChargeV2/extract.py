@@ -9,11 +9,12 @@ def check_extracted():
 def extract_all():
     # extract all of the important information from the battery report
     # this includes the 
+    getactivetime()
+    getinactivetime()
+    network.save(network.trainnetwork(gettable(r"C:\Windows\System32\battery-report.html")))
 def gettable(file_path):
-    history = pd.read_html(file_path)
-    history = history[2]
-    history = history[history['STATE'] != 'Suspended']
-    history = history.drop(["CAPACITY REMAINING.1", "STATE"], axis = 1)
+    history = pd.read_html(file_path)[2]
+    history = history[history['STATE'] != 'Suspended'].drop(["CAPACITY REMAINING.1", "STATE"], axis = 1)
     map = {
         "AC": 1,
         "Battery": 0
