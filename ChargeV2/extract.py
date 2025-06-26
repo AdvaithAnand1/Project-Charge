@@ -1,17 +1,21 @@
 import pandas as pd
-def getactivetime():
-
-def getinactivetime():
+import datetime
+import network, store
+def extractactivetime():
+    print("activetimeextract")
+    # implement a log analyzing algorithm to understand the times at which user turns on and usually turns off their machine
 
 def check_extracted():
-    # if last extracted is one week or more before or has no been extracted before
-    # call extract all
+    lastdate = datetime.date.fromisoformat(store.getline("data", 8))
+    date = datetime.date.today()
+    if ((date - lastdate).days > 7):
+        return False
+    else:
+        return True
 def extract_all():
-    # extract all of the important information from the battery report
-    # this includes the 
-    getactivetime()
-    getinactivetime()
-    network.save(network.trainnetwork(gettable(r"C:\Windows\System32\battery-report.html")))
+    extractactivetime()
+    network.save(r"C:\Windows\System32\battery-report.html")
+    store.store("data", 7, str(datetime.date.today()))
 def gettable(file_path):
     history = pd.read_html(file_path)[2]
     history = history[history['STATE'] != 'Suspended'].drop(["CAPACITY REMAINING.1", "STATE"], axis = 1)
@@ -36,4 +40,7 @@ def gettable(file_path):
     history = history.drop("START TIME", axis = 1)
     history["DATE"] = history["DATE"].map(map2).astype(float)
     history["TIME"] = history["TIME"].dt.second + history["TIME"].dt.minute * 60 + history["TIME"].dt.hour * 3600
+    history["DATE"] /= 7
+    history["TIME"] /= 24 * 3600
+    history["CAPACITY REMAINING"] /= 100
     return history
