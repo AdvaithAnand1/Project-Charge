@@ -1,0 +1,54 @@
+from abc import ABC, abstractmethod
+import wmi
+
+# Have manufacturers laid out in a dictionary to know which class to inherit methods from
+manufacturers = {
+    'LENOVO': 'LenovoBatteryController',
+    'DELL': 'DellBatteryController',
+    'ASUS': 'ASUSBatteryController',
+    ... : ...,
+}
+
+def manufacturer() -> str:
+    connection = wmi.WMI()
+    # for process in connection.classes:
+    #     if 'Process' in process:
+    #         print(process)
+
+    for system in connection.Win32_ComputerSystem():
+        # print(f'Manufacturer: {system.Manufacturer}')
+        # print(f'Model: {system.Model}')
+        
+        return system.Manufacturer.strip().upper()
+    raise ValueError('Manufacturer not found.')
+
+
+
+
+class BatteryController(ABC):
+    @abstractmethod
+    def enable_charge(self):
+        ...
+
+class LenovoBatteryController(BatteryController):
+    def enable_charge(self):
+        return super().enable_charge()
+    
+class ASUSBatteryController(BatteryController):
+    def enable_charge(self):
+        return super().enable_charge()
+
+if __name__ == '__main__':
+    manufacturer_name = manufacturer()
+    print(f'Manufacturer found, name: {manufacturer_name}')
+
+    ctrl_class_name = manufacturers.get(manufacturer_name, 'BatteryController')
+    ctrl_class = globals().get(ctrl_class_name, BatteryController)
+
+    if ctrl_class is BatteryController:
+        print(f'No controller available for {manufacturer_name}.')
+    else:
+        controller = ctrl_class()
+
+        # Ducktyped class charge enabling, will be decided by model at runtime 
+        controller.enable_charge()
