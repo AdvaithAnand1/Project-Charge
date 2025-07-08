@@ -1,15 +1,15 @@
-def getline(filepath, number):
+def getLine(filepath, number):
     with open(filepath, 'r') as f:
         text = f.readlines()
     return text[number-1].rstrip('\n')
-def getactivetime():
-    return (float(getline("data", 2)), float(getline("data", 4)))
-def getinactivetime():
-    return (float(getline("data", 4)), float(getline("data", 2)))
-def getdefaultlimit():
-    return float(getline("data", 6))
-def getlastdate():
-    return getline("data", 8)
+def getActiveTime():
+    return (float(getLine("data", 2)), float(getLine("data", 4)))
+def getInactiveTime():
+    return (float(getLine("data", 4)), float(getLine("data", 2)))
+def getDefaultLimit():
+    return float(getLine("data", 6))
+def getLastData():
+    return getLine("data", 8)
 def store(filepath, linnum, string):
     with open(filepath, 'r') as f:
         text = f.readlines()

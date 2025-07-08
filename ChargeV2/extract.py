@@ -1,22 +1,24 @@
 import pandas as pd
 import datetime
 import network, store
-def extractactivetime():
+def extractActiveTime():
     print("activetimeextract")
     # implement a log analyzing algorithm to understand the times at which user turns on and usually turns off their machine
+def getChargeTime():
+    return 2
 
-def check_extracted():
-    lastdate = datetime.date.fromisoformat(store.getline("data", 8))
+def checkExtracted():
+    lastdate = datetime.date.fromisoformat(store.getLine("data", 8))
     date = datetime.date.today()
     if ((date - lastdate).days > 7):
         return False
     else:
         return True
-def extract_all():
-    extractactivetime()
+def extractAll():
+    extractActiveTime()
     network.save(r"C:\Windows\System32\battery-report.html")
     store.store("data", 7, str(datetime.date.today()))
-def gettable(file_path):
+def getTable(file_path):
     history = pd.read_html(file_path)[2]
     history = history[history['STATE'] != 'Suspended'].drop(["CAPACITY REMAINING.1", "STATE"], axis = 1)
     map = {
