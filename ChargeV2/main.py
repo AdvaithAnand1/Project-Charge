@@ -5,42 +5,49 @@ import torch
 from datetime import datetime, date, time, timedelta
 
 def nextActiveStart(start_hour: int) -> datetime:
-    """
-    Return the next datetime when the clock reaches start_hour:00.
-
-    :param start_hour: Hour of day (0–23) when the active window starts.
-    """
+    # get the current date
     now = datetime.now()
-    # Build a datetime for today at start_hour:00
+    # create an object with today's date at the ideal time
     today_target = datetime.combine(now.date(), time(start_hour, 0))
-    # If that’s still in the future, use it; otherwise roll to tomorrow
+    # if we are past the time, shift it to the next day
     if today_target > now:
         return today_target
     else:
         return today_target + timedelta(days=1)
 
 def is_active_time(time_obj, active):
-   if(time_obj.tm_hour < active[0] or time_obj.tm_hour >= active[1]):
+    # check whether the passed time is within the tuple active time
+    if(time_obj.tm_hour < active[0] or time_obj.tm_hour >= active[1]):
       print("returning false")
       return False
-   print("returning true")
-   return True
-    # could work on implementing a more second and minute accurate approach
+    print("returning true")
+    return True
 
 def calcChargeStart():
+    # load in the previously saved neural network
     model = network.load("network.pth")
+
+    # create a prediction tensor that will hold a boolean value stating whether the device would be charging at that specific moment
     input_tensor = network.makeWeeklyInput(90)
     output = model.forward(input_tensor)
     max_vals, max_idxs = output.max(dim=1)
     preds = max_idxs.reshape((7,24))
+
+    # estalish the boundary variables for the loop
     finalHour = store.getActiveTime()[0]
     finalDay = (nextActiveStart(int(store.getActiveTime()[0])).weekday() + 1) % 7
     startHour = datetime.now().hour
     startDay = (datetime.now().weekday() + 1) % 7
+
+    # retrieve the amount of time we need to charge for to reach the battery capacity
     hoursToCharge = extract.getChargeTime()
+    
+    # make clones of the variables for looping purposes
     i = int(finalHour)
     j = int(finalDay)
     count = 0
+
+    # starting from the time at which we need to wake up the device, back track and find the latest possible charging time
     while ((j > startDay or (j == startDay and i > startHour)) and count < hoursToCharge):
         if preds[j][i] == 1:
             count += 1
@@ -48,35 +55,38 @@ def calcChargeStart():
         if (i < 0):
             i = i % 24
             j = (j - 1) % 7
-    print(f"day {j} of the week at {i}")
+    # for simplicity sake take advantage of the only two possible dates being the current day or next day
     if j==startDay:
         temp = datetime.combine(date.today(), time(i))
     else:
-        temp = datetime.combine(date.today() + timedelta(1), time(i))
+        temp = datetime.combine(date.today() + timedelta(days=1), time(i))
     return temp
 
-chargingtime = calcChargeStart
-
+# check if all of the necessary information is already extracted from their respective data sources
+# if not call the extraction process
 if(not extract.checkExtracted()):
    extract.extractAll()
 
+# get the initial calculation of the charge starting time
+chargingtime = calcChargeStart()
+
+# retrieve some of the necessary information from the stored files
 active_time = store.getActiveTime()
 inactive_time = store.getInactiveTime()
 defaultlimit = store.getDefaultLimit()
 
 def main_loop():
-   if(is_active_time(time.localtime(), store.getactivetime())):
-      interact.setlimit(defaultlimit)
-      charging = False
-   elif (time.localtime() > chargingtime):
-      interact.setlimit(100)
-      charging = True
-      if(greater than ending time): 
-         charging = False
-   else:
-      # set charging flag to true and recalculate
-      interact.setlimit(max(defaultlimit, psutil.sensors_battery().percent))
-      chargingtime = calcChargeStart
+    # if we are in the active time, it means that we can set it to default and turn off charging
+    if(is_active_time(time.localtime(), store.getactivetime())):
+        interact.setlimit(defaultlimit)
+        charging = False
+    # if the current time is past the calculated charging time, set the limit to 100
+    elif (time.localtime() > chargingtime):
+        interact.setlimit(100)
+    # else it means that we are waiting for the charging time to come so repeat the recalculation every second
+    else:
+        interact.setlimit(max(defaultlimit, psutil.sensors_battery().percent))
+        chargingtime = calcChargeStart()
 
 while(True):
    main_loop()
