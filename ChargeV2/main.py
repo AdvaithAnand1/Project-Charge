@@ -1,9 +1,12 @@
 import extract, interact, network, regression, store
-import time, math, numpy, torch
+import math, numpy, torch
 import subprocess, os, psutil
 import torch
+import time as timemodule
 from datetime import datetime, date, time, timedelta
 
+import os
+print(os.getcwd())
 def nextActiveStart(start_hour: int) -> datetime:
     # get the current date
     now = datetime.now()
@@ -15,7 +18,7 @@ def nextActiveStart(start_hour: int) -> datetime:
     else:
         return today_target + timedelta(days=1)
 
-def is_active_time(time_obj, active):
+def is_active_time(time_obj: time, active: (float, float)):
     # check whether the passed time is within the tuple active time
     if(time_obj.tm_hour < active[0] or time_obj.tm_hour >= active[1]):
       print("returning false")
@@ -76,18 +79,22 @@ inactive_time = store.getInactiveTime()
 defaultlimit = store.getDefaultLimit()
 
 def main_loop():
+    global chargingtime
     # if we are in the active time, it means that we can set it to default and turn off charging
-    if(is_active_time(time.localtime(), store.getactivetime())):
+    if(is_active_time(timemodule.localtime(), store.getActiveTime())):
+        print("active")
         interact.setlimit(defaultlimit)
         charging = False
     # if the current time is past the calculated charging time, set the limit to 100
-    elif (time.localtime() > chargingtime):
+    elif (datetime.now() > chargingtime):
+        print("charging")
         interact.setlimit(100)
     # else it means that we are waiting for the charging time to come so repeat the recalculation every second
     else:
+        print("inactive waiting")
         interact.setlimit(max(defaultlimit, psutil.sensors_battery().percent))
         chargingtime = calcChargeStart()
-
+        print(f"calculated: {chargingtime}")
 while(True):
    main_loop()
-   time.sleep(1)
+   timemodule.sleep(5)
