@@ -24,6 +24,6 @@ def store(filepath, linnum, string):
         string += '\n'
     
     # reinsert the information back into the document
-    text[linnum] = string
+    text[linnum-1] = string
     with open(filepath, 'w') as f:
         f.writelines(text)

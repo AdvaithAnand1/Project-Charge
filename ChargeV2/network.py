@@ -16,7 +16,7 @@ class chargenet(torch.nn.Module):
 
 # save the torch network
 def save(path, storeloc = "network.pth"):
-    torch.save(trainNetwork(extract.gettable(path)).state_dict(), storeloc)
+    torch.save(trainNetwork(extract.getTable(path)).state_dict(), storeloc)
 
 # load in and return the torch network
 def load(accessloc):
@@ -32,7 +32,7 @@ def trainNetwork(table):
     lossfn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = 0.001)
     
-    history = extract.gettable(r"C:\Windows\System32\battery-report.html")
+    history = extract.getTable(r"C:\Windows\System32\battery-report.html")
 
     X = torch.from_numpy(history.drop("SOURCE", axis = 1).astype("float32").values)
     Y = torch.from_numpy(history["SOURCE"].astype("int64").values)

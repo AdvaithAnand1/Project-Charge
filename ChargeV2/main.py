@@ -1,8 +1,4 @@
-import extract, interact, network, regression, store
-import math, numpy, torch
-import subprocess, os, psutil
-import torch
-import time as timemodule
+import extract, interact, network, regression, store, math, numpy, torch, subprocess, os, psutil, torch, time as timemodule
 from datetime import datetime, date, time, timedelta
 
 import os
@@ -20,11 +16,19 @@ def nextActiveStart(start_hour: int) -> datetime:
 
 def is_active_time(time_obj: time, active: (float, float)):
     # check whether the passed time is within the tuple active time
-    if(time_obj.tm_hour < active[0] or time_obj.tm_hour >= active[1]):
-      print("returning false")
-      return False
-    print("returning true")
-    return True
+    if(active[1] >= active[0]):
+        if(time_obj.tm_hour < active[0] or time_obj.tm_hour >= active[1]):
+            print("returning false")
+            return False
+        print("returning true")
+        return True
+    else:
+        if(time_obj.tm_hour > active[0] or time_obj.tm_hour < active[1]):
+            print("returning true")
+            return True
+        print("returning false")
+        return False
+
 
 def calcChargeStart():
     # load in the previously saved neural network
@@ -84,7 +88,6 @@ def main_loop():
     if(is_active_time(timemodule.localtime(), store.getActiveTime())):
         print("active")
         interact.setlimit(defaultlimit)
-        charging = False
     # if the current time is past the calculated charging time, set the limit to 100
     elif (datetime.now() > chargingtime):
         print("charging")
